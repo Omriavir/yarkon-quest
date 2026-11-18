@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>מבצע נוצת הזהב | משימת אימות שטח - צוות CLV אינטל</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700;800&family=Rubik:wght@500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b132b;
+      --card: #1c2541;
+      --card-light: #253256;
+      --accent: #00b4d8;
+      --accent-glow: rgba(0, 180, 216, 0.35);
+      --gold: #ffd166;
+      --green: #06d6a0;
+      --text: #f8f9fa;
+      --muted: #a9bcd0;
+      --danger: #ef476f;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Assistant', sans-serif;
+      background: radial-gradient(circle at top, #1b2845 0%, #0b132b 100%);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+      padding-bottom: 40px;
+    }
+
+    h1, h2, h3 {
+      font-family: 'Rubik', sans-serif;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    /* Top HUD Bar */
+    .hud {
+      position: sticky;
+      top: 10px;
+      z-index: 100;
+      background: rgba(28, 37, 65, 0.92);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 180, 216, 0.3);
+      border-radius: 16px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .hud-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--accent);
+    }
+
+    .inventory {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .clue-slot {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(11, 19, 43, 0.8);
+      border: 1px dashed var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--muted);
+      transition: all 0.3s ease;
+    }
+
+    .clue-slot.unlocked {
+      border: 1px solid var(--gold);
+      background: rgba(255, 209, 102, 0.15);
+      color: var(--gold);
+      box-shadow: 0 0 12px rgba(255, 209, 102, 0.3);
+      transform: scale(1.05);
+    }
+
+    .timer {
+      font-family: monospace;
+      font-size: 1.05rem;
+      background: #0b132b;
+      padding: 4px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--green);
+    }
+
+    /* Progress Bar */
+    .progress-wrap {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--green));
+      transition: width 0.5s ease;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .illustration-box {
+      width: 100%;
+      height: 210px;
+      background: linear-gradient(135deg, #102542 0%, #1d3557 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      border-bottom: 1px solid rgba(0, 180, 216, 0.25);
+    }
+
+    .illustration-box svg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .station-tag {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(11, 19, 43, 0.85);
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .card-body {
+      padding: 22px;
+    }
+
+    .card-title {
+      font-size: 1.55rem;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+
+    .card-subtitle {
+      color: var(--accent);
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .story-box {
+      background: rgba(11, 19, 43, 0.55);
+      border-right: 4px solid var(--accent);
+      padding: 14px 16px;
+      border-radius: 10px;
+      margin-bottom: 18px;
+      color: #e2e8f0;
+      font-size: 1.02rem;
+    }
+
+    .riddle-box {
+      background: linear-gradient(145deg, #232f52, #1a233e);
+      border: 1px solid rgba(255, 209, 102, 0.35);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .riddle-label {
+      color: var(--gold);
+      font-weight: 800;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .riddle-poem {
+      font-size: 1.12rem;
+      font-weight: 600;
+      color: #fff;
+      white-space: pre-line;
+      line-height: 1.75;
+    }
+
+    .bonus-box {
+      background: rgba(6, 214, 160, 0.1);
+      border: 1px dashed var(--green);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+      color: #d8f3dc;
+    }
+
+    .bonus-box strong {
+      color: var(--green);
+    }
+
+    /* Controls & Inputs */
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      background: #0b132b;
+      color: #fff;
+      font-size: 1.05rem;
+      font-family: 'Assistant', sans-serif;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button, .btn-link {
+      cursor: pointer;
+      border: none;
+      border-radius: 12px;
+      padding: 13px 18px;
+      font-family: 'Rubik', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
+    }
+
+    button:active, .btn-link:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #0077b6);
+      color: #fff;
+      flex: 1;
+      box-shadow: 0 4px 15px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #20c4e6, #0088cc);
+    }
+
+    .btn-map {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .btn-map:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-hint {
+      background: transparent;
+      color: var(--gold);
+      border: 1px solid rgba(255, 209, 102, 0.4);
+      font-size: 0.9rem;
+      padding: 9px 14px;
+    }
+
+    .btn-whatsapp {
+      background: #25D366;
+      color: #0b132b;
+      width: 100%;
+      margin-top: 12px;
+    }
+
+    .feedback {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 700;
+      display: none;
+    }
+
+    .feedback.error {
+      display: block;
+      background: rgba(239, 71, 111, 0.18);
+      border: 1px solid var(--danger);
+      color: #ffccd5;
+    }
+
+    .feedback.hint {
+      display: block;
+      background: rgba(255, 209, 102, 0.15);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 18px 0;
+      text-align: center;
+    }
+
+    .info-pill {
+      background: rgba(11, 19, 43, 0.7);
+      padding: 12px 8px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .info-pill span {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .info-pill strong {
+      font-size: 1.05rem;
+      color: var(--gold);
+    }
+
+    .alert-note {
+      background: rgba(239, 71, 111, 0.12);
+      border: 1px solid rgba(239, 71, 111, 0.4);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 0.9rem;
+      color: #ffd6e0;
+      margin-bottom: 18px;
+    }
+
+    /* Certificate */
+    .certificate {
+      border: 3px double var(--gold);
+      background: radial-gradient(circle at center, #253256 0%, #141c33 100%);
+      padding: 24px;
+      border-radius: 18px;
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .cert-title {
+      color: var(--gold);
+      font-size: 1.6rem;
+      margin-bottom: 8px;
+    }
+
+    .cert-team {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin: 10px 0;
+    }
+
+    .reset-link {
+      display: block;
+      text-align: center;
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    @media (max-width: 480px) {
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+      .hud {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Top HUD -->
+  <div class="hud" id="hud" style="display:none;">
+    <div class="hud-badge">
+      <span>⚡ INTEL CLV</span>
+      <span class="timer" id="timer">00:00</span>
+    </div>
+    <div class="inventory" title="תרמיל רמזי האימות">
+      <div class="clue-slot" id="slot-0">?</div>
+      <div class="clue-slot" id="slot-1">?</div>
+      <div class="clue-slot" id="slot-2">?</div>
+      <div class="clue-slot" id="slot-3">?</div>
+    </div>
+  </div>
+
+  <div class="progress-wrap" id="progress-wrap" style="display:none;">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+
+  <!-- Dynamic Screen Container -->
+  <div id="app"></div>
+</div>
+
+<script>
+  const STATIONS = [
+    {
+      id: 0,
+      tag: "תחנה 1 מתוך 5 • נקודת הזנקה",
+      title: "מתחם הכדור הפורח (TLV Balloon)",
+      location: "מתחם כדור פורח, גני יהושע",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=TLV+Balloon+Park+Hayarkon",
+      story: "ברוכים הבאים לצוות CLV! היום מחליפים את מעבדות הסיליקון וה-Testbenches ב-Field Validation אמיתי בשטח. המשימה: לאסוף 4 רמזים לאורך פארק הירקון ולהשלים Sign-Off מלא בראש ציפור.",
+      riddle: "אני ענק עגול שעולה אל על,\nקשור לאדמה בכבל מברזל.\nהביטו סביב, אל תטעו בכיוון,\nצעדו מזרחה אל ממלכת האבנים והציון.\nשם מחכים לכם עמודי ענק שותקים,\nשהובאו לכאן מכל קצוות המרחקים.",
+      bonus: "משימת Sanity Check: צלמו תמונה קבוצתית שבה נראה כאילו אתם מחזיקים את הכדור הפורח באוויר באמצעות פרספקטיבה!",
+      question: "לאן עליכם לצעוד מכאן? (הקלידו את שם התחנה הבאה)",
+      answers: ["גן הסלעים", "לגן הסלעים", "סלעים"],
+      hints: [
+        "חפשו במפת הפארק גן מיוחד שנמצא מעט מזרחית לכדור הפורח ומלא בסלעים מכל הארץ.",
+        "התשובה היא: גן הסלעים."
+      ],
+      clueReward: "✓",
+      svg: `<svg viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sky1" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#0077b6"/>
+            <stop offset="100%" stop-color="#90e0ef"/>
+          </linearGradient>
+        </defs>
+        <rect width="600" height="220" fill="url(#sky1)"/>
+        <circle cx="510" cy="45" r="24" fill="#ffd166" opacity="0.9"/>
+        <path d="M0,185 Q150,165 300,185 T600,180 L600,220 L0,220 Z" fill="#2d6a4f"/>
+        <line x1="300" y1="130" x2="300" y2="195" stroke="#1b263b" stroke-width="2" stroke-dasharray="4"/>
+        <ellipse cx="300" cy="75" rx="48" ry="56" fill="#ef476f"/>
+        <path d="M300,19 C322,19 332,131 300,131 C268,131 278,19 300,19 Z" fill="#ffd166"/>
+        <rect x="288" y="135" width="24" height="14" rx="3" fill="#6c584c"/>
+      </svg>`
+    },
+    {
+      id: 1,
+      tag: "תחנה 2 מתוך 5 • רמז ראשון",
+      title: "ממלכת האבן – גן הסלעים",
+      location: "גן הסלעים, פארק הירקון",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=גן+הסלעים+פארק+הירקון",
+      story: "הגעתם לגן הסלעים! כאן נאספו תצורות גיאולוגיות מכל רחבי הארץ – ממש כמו ארכיטקטורת SoC שמאחדת בלוקים שונים על שבב אחד. הסתובבו בין הענקים הדוממים.",
+      riddle: "הביטו בשלטי ההסבר שליד האבנים הגדולות,\nמאיזה חבל ארץ בצפון הובאו רבות מהדוגמאות?\nרשמו לעצמכם את האות הראשונה של השם גליל (האות: ג').\nכעת, המשיכו אל השכנים הקוצניים שלנו –\nהם אוגרים מים בלב, לובשים שריון ירוק,\nולמרות שהם דוקרים, הם פורחים במלוא הדרם מרחוק.",
+      bonus: "משימת Coverage: מצאו סלע שנראה כמו ליבת מעבד או לב, וצלמו לידו חבר צוות.",
+      question: "הזינו את האות שנאספה כרמז (ג') או את שם היעד הבא:",
+      answers: ["ג", "ג'", "גן הקקטוסים", "לגן הקקטוסים", "קקטוסים"],
+      hints: [
+        "האות הראשונה של המילה 'גליל', והגן הצמוד מלא בקקטוסים.",
+        "הקלידו: ג' (או גן הקקטוסים)."
+      ],
+      clueReward: "ג'",
+      svg: `<svg viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg">
+        <rect width="600" height="220" fill="#1d3557"/>
+        <path d="M0,175 Q300,155 600,175 L600,220 L0,220 Z" fill="#40916c"/>
+        <polygon points="140,180 185,95 245,105 270,180" fill="#8d99ae"/>
+        <polygon points="240,180 305,70 365,85 395,180" fill="#adb5bd"/>
+        <polygon points="365,180 415,115 465,125 485,180" fill="#6c757d"/>
+        <text x="305" y="145" fill="#ffd166" font-size="26" font-weight="bold" font-family="Rubik">ג'</text>
+      </svg>`
+    },
+    {
+      id: 2,
+      tag: "תחנה 3 מתוך 5 • רמז שני",
+      title: "השומרים הקוצניים – גן הקקטוסים",
+      location: "גן הקקטוסים, גני יהושע",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=גן+הקקטוסים+פארק+הירקון",
+      story: "ברוכים הבאים לממלכת הקוצים! יותר מ-3,000 מינים של צמחים מדבריים חיים כאן יחד – אפס באגים, מקסימום עמידות בתנאי קיצון.",
+      riddle: "עמדו במרכז הגן והביטו סביב:\nכמה אצבעות יש לקקטוס הגבוה ביותר שאתם רואים? ספרו בלב!\nהרמז השני שלכם הוא הספרה 7.\nכדי להמשיך, צאו מהגנים וצעדו דרומה לעבר הנחל,\nשם תפגשו גלגלי אבן עתיקים שפעם טחנו קמח לכל הקהל.\nמספרם כמספר ימי השבוע, ולידם המים זורמים בשצף.",
+      bonus: "משימת Stress Test: צלמו את הקקטוס הכי מרשים בגן מבלי שאף אחד יידקר!",
+      question: "הזינו את הספרה שנאספה כרמז (7) או את שם היעד הבא:",
+      answers: ["7", "שבע טחנות", "לשבע טחנות", "שבע הטחנות"],
+      hints: [
+        "הרמז הוא הספרה 7, והאתר ההיסטורי על גדות הירקון נקרא על שם מספר הטחנות שבו.",
+        "הקלידו: 7 (או שבע טחנות)."
+      ],
+      clueReward: "7",
+      svg: `<svg viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg">
+        <rect width="600" height="220" fill="#2b2d42"/>
+        <rect y="175" width="600" height="45" fill="#e9c46a"/>
+        <rect x="285" y="55" width="30" height="125" rx="15" fill="#2a9d8f"/>
+        <path d="M285,115 H255 V85" fill="none" stroke="#2a9d8f" stroke-width="18" stroke-linecap="round"/>
+        <path d="M315,100 H345 V70" fill="none" stroke="#2a9d8f" stroke-width="18" stroke-linecap="round"/>
+        <circle cx="300" cy="48" r="8" fill="#ef476f"/>
+        <text x="430" y="110" fill="#ffd166" font-size="36" font-weight="bold" font-family="Rubik">7</text>
+      </svg>`
+    },
+    {
+      id: 3,
+      tag: "תחנה 4 מתוך 5 • רמז שלישי",
+      title: "גלגלי הזמן – שבע טחנות",
+      location: "שבע טחנות, פארק הירקון",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=שבע+טחנות+פארק+הירקון",
+      story: "הגעתם לשרידים העתיקים של שבע טחנות! כאן, לפני מאות שנים, כוח המים של הירקון סובב אבני ריחיים כבדות – ה-Clock Frequency המקורי של האזור.",
+      riddle: "הביטו במים הזורמים ובברווזים השטים בנחת.\nהרמז השלישי שלכם הוא האות הראשונה של המילה נחל (האות: נ').\nעכשיו חצו את הגשר מעל המים,\nופנו אל חורשה ירוקה שנקראת על שם בעל כנף מן השמיים.\nכאן נחל איילון פוגש את הירקון,\nוציפורים מכל העולם עוצרות כאן למנוחה ולמזון.",
+      bonus: "משימת Clock Sync: צלמו בומרנג או תמונה קבוצתית על הגשר מעל המים הזורמים.",
+      question: "הזינו את האות שנאספה כרמז (נ') או את שם תחנת הסיום:",
+      answers: ["נ", "נ'", "ראש ציפור", "לראש ציפור", "פארק הצפרות"],
+      hints: [
+        "האות הראשונה של המילה 'נחל', ויעד הסיום הוא פארק הצפרות במפגש הנחלים.",
+        "הקלידו: נ' (או ראש ציפור)."
+      ],
+      clueReward: "נ'",
+      svg: `<svg viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg">
+        <rect width="600" height="220" fill="#1b4332"/>
+        <path d="M0,155 Q150,140 300,155 T600,155 L600,220 L0,220 Z" fill="#0096c7"/>
+        <circle cx="240" cy="120" r="42" fill="none" stroke="#d4a373" stroke-width="12"/>
+        <line x1="240" y1="78" x2="240" y2="162" stroke="#d4a373" stroke-width="6"/>
+        <line x1="198" y1="120" x2="282" y2="120" stroke="#d4a373" stroke-width="6"/>
+        <text x="380" y="115" fill="#ffd166" font-size="34" font-weight="bold" font-family="Rubik">נ'</text>
+      </svg>`
+    },
+    {
+      id: 4,
+      tag: "תחנה 5 מתוך 5 • אימות סופי (Final Sign-Off)",
+      title: "ראש ציפור – פארק הצפרות",
+      location: "ראש ציפור, פארק הירקון",
+      mapUrl: "https://www.google.com/maps/search/?api=1&query=ראש+ציפור+פארק+הירקון",
+      story: "כל הכבוד לצוות CLV! הגעתם לראש ציפור – נקודת האינטגרציה שבה נחל איילון מתחבר לנחל הירקון. הגיע הזמן לאחד את כל הרמזים ולהשלים את האימות הסופי.",
+      riddle: "הרמזים שאספתם בדרך: האות ג', הספרה 7, והאות נ'.\nשאלת הסיום לפיצוח הקוד:\nמהו השם המלא של הפארק הענק שבו טיילתם היום\n(שמתחיל ב-ג', כולל את 7 טחנות, ושוכן לצד נחל הירקון)?",
+      bonus: "משימת Tape-Out: הרימו כוסית / נשנשו משהו טוב יחד וצלמו תמונת ניצחון קבוצתית!",
+      question: "הזינו את שם הפארק המלא כדי להנפיק תעודת Sign-Off:",
+      answers: ["פארק גני יהושע", "גני יהושע", "פארק הירקון גני יהושע"],
+      hints: [
+        "הפארק נקרא על שם ראש עיריית תל אביב המיתולוגי יהושע רבינוביץ', ומתחיל במילה 'גני'.",
+        "התשובה היא: פארק גני יהושע."
+      ],
+      clueReward: "🪶",
+      svg: `<svg viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg">
+        <rect width="600" height="220" fill="#0f292f"/>
+        <path d="M0,165 Q220,145 320,180 L600,150 L600,220 L0,220 Z" fill="#00b4d8" opacity="0.7"/>
+        <path d="M230,115 Q290,55 375,85 Q320,115 265,145 Z" fill="#ffd166"/>
+        <line x1="220" y1="155" x2="375" y2="85" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      </svg>`
+    }
+  ];
+
+  // State Management
+  let state = JSON.parse(localStorage.getItem('clv_yarkon_quest')) || {
+    started: false,
+    teamName: '',
+    currentStep: 0,
+    completed: false,
+    startTime: null,
+    endTime: null,
+    hintIndex: 0
+  };
+
+  let timerInterval = null;
+
+  function saveState() {
+    localStorage.setItem('clv_yarkon_quest', JSON.stringify(state));
+  }
+
+  function formatTime(ms) {
+    const totalSec = Math.floor(ms / 1000);
+    const mins = String(Math.floor(totalSec / 60)).padStart(2, '0');
+    const secs = String(totalSec % 60).padStart(2, '0');
+    return `${mins}:${secs}`;
+  }
+
+  function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      if (state.started && !state.completed && state.startTime) {
+        document.getElementById('timer').textContent = formatTime(Date.now() - state.startTime);
+      }
+    }, 1000);
+  }
+
+  function updateHUD() {
+    const hud = document.getElementById('hud');
+    const progressWrap = document.getElementById('progress-wrap');
+    const progressBar = document.getElementById('progress-bar');
+
+    if (!state.started) {
+      hud.style.display = 'none';
+      progressWrap.style.display = 'none';
+      return;
+    }
+
+    hud.style.display = 'flex';
+    progressWrap.style.display = 'block';
+
+    const pct = state.completed ? 100 : (state.currentStep / STATIONS.length) * 100;
+    progressBar.style.width = `${pct}%`;
+
+    const clues = ["ג'", "7", "נ'", "🪶"];
+    for (let i = 0; i < 4; i++) {
+      const slot = document.getElementById(`slot-${i}`);
+      // Clues unlock after station 1, 2, 3, 4
+      if (state.completed || state.currentStep > i + 1) {
+        slot.textContent = clues[i];
+        slot.classList.add('unlocked');
+      } else {
+        slot.textContent = '?';
+        slot.classList.remove('unlocked');
+      }
+    }
+
+    if (state.completed && state.endTime && state.startTime) {
+      document.getElementById('timer').textContent = formatTime(state.endTime - state.startTime);
+    }
+  }
+
+  function renderIntro() {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <div class="card">
+        <div class="illustration-box">
+          <span class="station-tag">INTEL • CLV TEAM</span>
+          <svg viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg">
+            <rect width="600" height="220" fill="#0b132b"/>
+            <circle cx="300" cy="110" r="85" fill="none" stroke="#00b4d8" stroke-width="2" stroke-dasharray="8 6"/>
+            <path d="M250,115 Q300,55 360,85 Q315,120 265,145 Z" fill="#ffd166"/>
+            <text x="300" y="195" text-anchor="middle" fill="#a9bcd0" font-family="Rubik" font-size="15">YARKON FIELD VALIDATION QUEST</text>
+          </svg>
+        </div>
+        <div class="card-body">
+          <h1 class="card-title">סוד נוצת הזהב של הירקון</h1>
+          <div class="card-subtitle">🧭 משימת אימות שטח וגיבוש | צוות CLV אינטל</div>
+          
+          <div class="story-box">
+            היום עוזבים את הסימולציות ויוצאים ל-<strong>Field Validation</strong> אמיתי בשטח! לאורך המסלול תאספו 4 רמזים מנקודות מפתח בפארק הירקון, תפתרו חידות, ותבצעו אינטגרציה מלאה בנקודת הסיום בראש ציפור.
+          </div>
+
+          <div class="info-grid">
+            <div class="info-pill"><span>נקודת התחלה</span><strong>הכדור הפורח</strong></div>
+            <div class="info-pill"><span>נקודת סיום</span><strong>ראש ציפור</strong></div>
+            <div class="info-pill"><span>מרחק וזמן</span><strong>~2.8 ק"מ • 90 דק'</strong></div>
+          </div>
+
+          <div class="alert-note">
+            <strong>שימו לב:</strong> גן הסלעים וגן הקקטוסים נסגרים לרוב בשעות אחה"צ (סביב 15:30–16:00). מומלץ לבצע את המסלול בשעות הבוקר או הצהריים.
+          </div>
+
+          <div class="input-group">
+            <input type="text" id="team-input" placeholder="הזינו שם תת-צוות / קבוצה (לדוגמה: CLV Alpha)" value="${state.teamName || 'צוות CLV'}" />
+            <button class="btn-primary" onclick="startGame()">🚀 התחילו משימת אימות</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderStation() {
+    const s = STATIONS[state.currentStep];
+    const app = document.getElementById('app');
+
+    app.innerHTML = `
+      <div class="card">
+        <div class="illustration-box">
+          <span class="station-tag">${s.tag}</span>
+          ${s.svg}
+        </div>
+        <div class="card-body">
+          <h2 class="card-title">${s.title}</h2>
+          <div class="card-subtitle">📍 ${s.location}</div>
+
+          <div class="story-box">${s.story}</div>
+
+          <div class="riddle-box">
+            <span class="riddle-label">📜 חידת התחנה</span>
+            <div class="riddle-poem">${s.riddle}</div>
+          </div>
+
+          <div class="bonus-box">
+            <strong>📸 ${s.bonus}</strong>
+          </div>
+
+          <div class="input-group">
+            <label for="answer-input" style="font-weight:700; color:#e2e8f0;">${s.question}</label>
+            <input type="text" id="answer-input" placeholder="הקלידו את התשובה כאן..." onkeypress="if(event.key==='Enter') checkAnswer()" />
+          </div>
+
+          <div class="btn-row">
+            <button class="btn-primary" onclick="checkAnswer()">✅ אמת והמשך לתחנה הבאה</button>
+            <a class="btn-link btn-map" href="${s.mapUrl}" target="_blank" rel="noopener">🗺️ ניווט</a>
+          </div>
+
+          <div style="margin-top: 12px;">
+            <button class="btn-hint" onclick="showHint()">💡 צריכים רמז?</button>
+          </div>
+
+          <div id="feedback" class="feedback"></div>
+        </div>
+      </div>
+      <span class="reset-link" onclick="resetGame()">איפוס משחק והתחלה מחדש</span>
+    `;
+  }
+
+  function renderVictory() {
+    const app = document.getElementById('app');
+    const duration = state.endTime && state.startTime ? formatTime(state.endTime - state.startTime) : "00:00";
+    const shareText = encodeURIComponent(
+      `🏆 השלמנו בהצלחה את משימת ה-Field Validation של צוות CLV בפארק הירקון!\n` +
+      `👥 קבוצה: ${state.teamName}\n` +
+      `⏱️ זמן כולל: ${duration}\n` +
+      `🧩 קוד סופי: ג' - 7 - נ' (פארק גני יהושע) — 100% Coverage, אפס באגים!`
+    );
+
+    app.innerHTML = `
+      <div class="card">
+        <div class="card-body">
+          <div class="certificate">
+            <div style="font-size: 2.8rem; margin-bottom: 6px;">🏆</div>
+            <h2 class="cert-title">תעודת Sign-Off רשמית</h2>
+            <p style="color: var(--muted);">זאת לאשר כי הקבוצה</p>
+            <div class="cert-team">${state.teamName}</div>
+            <p>השלימה בהצלחה את מסלול <strong>"סוד נוצת הזהב של הירקון"</strong> מהכדור הפורח ועד ראש ציפור עם <strong>100% Functional Coverage</strong>.</p>
+            <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.15); font-weight: 700; color: var(--green);">
+              ⏱️ זמן ביצוע כולל: ${duration} | רמזים שנאספו: ג' • 7 • נ' • 🪶
+            </div>
+          </div>
+
+          <a class="btn-link btn-whatsapp" href="https://wa.me/?text=${shareText}" target="_blank" rel="noopener">
+            📲 שתפו תוצאה בקבוצת הוואטסאפ של הצוות
+          </a>
+
+          <span class="reset-link" onclick="resetGame()">הפעלת משחק חדש</span>
+        </div>
+      </div>
+    `;
+  }
+
+  function startGame() {
+    const input = document.getElementById('team-input').value.trim();
+    state.teamName = input || 'צוות CLV';
+    state.started = true;
+    state.currentStep = 0;
+    state.completed = false;
+    state.startTime = Date.now();
+    state.hintIndex = 0;
+    saveState();
+    render();
+  }
+
+  function normalizeText(str) {
+    return str
+      .trim()
+      .toLowerCase()
+      .replace(/['"׳״\-.,!?]/g, '')
+      .replace(/\s+/g, ' ');
+  }
+
+  function checkAnswer() {
+    const inputEl = document.getElementById('answer-input');
+    const feedback = document.getElementById('feedback');
+    const userAns = normalizeText(inputEl.value);
+
+    if (!userAns) {
+      feedback.className = 'feedback error';
+      feedback.textContent = 'יש להזין תשובה לפני המעבר לתחנה הבאה.';
+      return;
+    }
+
+    const station = STATIONS[state.currentStep];
+    const isCorrect = station.answers.some(ans => normalizeText(ans) === userAns);
+
+    if (isCorrect) {
+      state.hintIndex = 0;
+      if (state.currentStep < STATIONS.length - 1) {
+        state.currentStep++;
+      } else {
+        state.completed = true;
+        state.endTime = Date.now();
+      }
+      saveState();
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      feedback.className = 'feedback error';
+      feedback.textContent = '❌ Assertion Failed! התשובה לא תואמת — נסו שוב או היעזרו ברמז.';
+    }
+  }
+
+  function showHint() {
+    const station = STATIONS[state.currentStep];
+    const feedback = document.getElementById('feedback');
+    const hintText = station.hints[Math.min(state.hintIndex, station.hints.length - 1)];
+    state.hintIndex++;
+    feedback.className = 'feedback hint';
+    feedback.textContent = `💡 רמז: ${hintText}`;
+  }
+
+  function resetGame() {
+    if (confirm('לאפס את ההתקדמות ולהתחיל את המשחק מההתחלה?')) {
+      localStorage.removeItem('clv_yarkon_quest');
+      state = {
+        started: false,
+        teamName: '',
+        currentStep: 0,
+        completed: false,
+        startTime: null,
+        endTime: null,
+        hintIndex: 0
+      };
+      render();
+    }
+  }
+
+  function render() {
+    updateHUD();
+    if (!state.started) {
+      renderIntro();
+    } else if (state.completed) {
+      renderVictory();
+    } else {
+      renderStation();
+      startTimer();
+    }
+  }
+
+  render();
+</script>
+</body>
+</html>
